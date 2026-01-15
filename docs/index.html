@@ -1,11 +1,70 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <title>Github Pages Test</title>
-  <meta name="description" content="Github Pages のテストページ">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Chart on GitHub Pages</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
-  <p>テストページ</p>
+
+    <h2>売上推移グラフ</h2>
+    <div style="width: 80%; margin: auto;">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        // CSVファイルのパス
+        const csvFile = './data.csv';
+
+        // ページ読み込み時に実行
+        window.onload = function() {
+            fetch(csvFile)
+                .then(response => response.text())
+                .then(text => {
+                    // Papa Parseを使ってCSVを解析
+                    const data = Papa.parse(text, {
+                        header: true,      // 1行目をヘッダーとして扱う
+                        skipEmptyLines: true // 空行をスキップ
+                    });
+                    
+                    // グラフ描画関数を呼び出し
+                    drawChart(data.data);
+                });
+        };
+
+        function drawChart(data) {
+            // CSVデータからラベル（X軸）とデータ（Y軸）を抽出
+            // mapを使って配列を作成します
+            const labels = data.map(item => item['日付']);
+            const values = data.map(item => parseInt(item['売上'])); // 数値に変換
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            // Chart.jsの設定
+            new Chart(ctx, {
+                type: 'bar', // グラフの種類: bar(棒), line(折れ線), pie(円) など
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '売上データ',
+                        data: values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)', // 棒の色
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true // Y軸を0からスタート
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
